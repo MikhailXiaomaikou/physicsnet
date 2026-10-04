@@ -1,6 +1,6 @@
 {
  "args": {
-  "name": "newton",
+  "name": "physicsnet",
   "steps": 60000,
   "batch": 128,
   "lr": 0.002,

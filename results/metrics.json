@@ -24,7 +24,7 @@
   }
  },
  "laws_other_seeds": {
-  "newton_seed1.pt": {
+  "physicsnet_seed1.pt": {
    "inertia": {
     "exponent": -0.9999087265132771,
     "prefactor": 0.9999999999999999,
@@ -48,7 +48,7 @@
     "mass_sensitivity": 0.0050206171729962785
    }
   },
-  "newton_seed2.pt": {
+  "physicsnet_seed2.pt": {
    "inertia": {
     "exponent": -1.0000369904522992,
     "prefactor": 1.0,
@@ -129,7 +129,7 @@
   }
  },
  "generalization": {
-  "newton": {
+  "physicsnet": {
    "2": {
     "median_rel_err": 0.0007886409349596133,
     "rel_rms": 0.0020792653002282436,
@@ -499,7 +499,7 @@
    "n_systems": 60,
    "n_candidates": 1500,
    "models": {
-    "newton": {
+    "physicsnet": {
      "position": [
       0.0,
       7.280117294577488e-07,
@@ -5450,7 +5450,7 @@
    "n_systems": 60,
    "n_candidates": 3000,
    "models": {
-    "newton": {
+    "physicsnet": {
      "position": [
       0.0,
       5.072706164213775e-07,

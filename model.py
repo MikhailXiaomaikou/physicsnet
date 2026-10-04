@@ -3,16 +3,16 @@ model.py —— 三个模型，物理结构由少到多
 
   BlackBoxMLP  没有任何物理结构：整个系统拉平成一个向量，直接输出所有加速度。
   PairwiseNet  只知道"作用是成对的、可以叠加"：a_i = Σ_j ψ(i, j)。
-  NewtonNet    牛顿力学的骨架做进结构，具体定律留给网络去学（见下）。
+  PhysicsNet   当前阶段（v0）只覆盖牛顿力学：把它的骨架做进结构，具体定律留给网络去学。
 
-NewtonNet 写死在结构里的假设（骨架）：
+PhysicsNet 目前写死在结构里的假设（牛顿力学的骨架）：
   1. 力是成对的：每一对物体之间有一个相互作用；
   2. 作用力与反作用力大小相等、方向相反，沿两者连线（第三定律的强形式）；
   3. 力的大小只取决于两者的距离和属性（与绝对位置、朝向、速度无关）；
   4. 叠加原理：一个物体受的合力 = 各成对力的矢量和；
   5. 加速度 = 合力 × 一个只和该物体自身质量读数有关的响应系数。
 
-NewtonNet 需要从数据里学的东西（两个小网络）：
+PhysicsNet 需要从数据里学的东西（两个小网络）：
   force_net   φ(m_i, m_j, r, 有无弹簧, k, L) → 成对力的大小    （万有引力定律、胡克定律）
   inertia_net h(m)                          → 惯性响应系数    （第二定律里的 1/m）
 
@@ -55,7 +55,7 @@ def _pair_geometry(x, mask):
     return d, r, pair_ok
 
 
-class NewtonNet(nn.Module):
+class PhysicsNet(nn.Module):
     def __init__(self, hidden=128, depth=3, log_features=True):
         super().__init__()
         self.log_features = log_features
@@ -153,4 +153,4 @@ class BlackBoxMLP(nn.Module):
 
 
 def build(name):
-    return {"newton": NewtonNet, "pairwise": PairwiseNet, "mlp": BlackBoxMLP}[name]()
+    return {"physicsnet": PhysicsNet, "pairwise": PairwiseNet, "mlp": BlackBoxMLP}[name]()

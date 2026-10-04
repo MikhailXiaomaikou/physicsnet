@@ -4,7 +4,7 @@ train.py —— 只用"观测"训练
 监督信号只有 a_obs：由位置序列做二阶差分得到的加速度。真实加速度 a_true 只在
 打印验证指标时使用，不参与训练。
 
-用法:  python train.py newton      (或 pairwise / mlp)
+用法:  python train.py physicsnet      (或 pairwise / mlp)
 """
 import argparse, json, math, os, time
 import numpy as np
@@ -46,7 +46,7 @@ def evaluate(model, data, bs=8192):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("name", choices=["newton", "pairwise", "mlp"])
+    ap.add_argument("name", choices=["physicsnet", "pairwise", "mlp"])
     ap.add_argument("--steps", type=int, default=60000)
     ap.add_argument("--batch", type=int, default=128)
     ap.add_argument("--lr", type=float, default=2e-3)

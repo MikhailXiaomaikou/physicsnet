@@ -1,7 +1,7 @@
 """
 evaluate.py —— 网络到底学到了什么？
 
-  1. 学到的定律：把 NewtonNet 里的两个小网络单独拿出来，和真实定律逐点对比
+  1. 学到的定律：把 PhysicsNet 里的两个小网络单独拿出来，和真实定律逐点对比
   2. 物体数泛化：训练只见过 3、4 体，在 2–8 体的全新系统上测加速度误差
   3. 长时间推演：从同一初始状态出发让各模型自己往前推，看轨迹偏差和守恒量
   4. 推演示例：开普勒椭圆轨道、旋转的弹簧链、"恒星 + 行星 + 弹簧分子"6 体系统
@@ -23,12 +23,12 @@ from model import build
 OUT = "results"
 M_LO, M_HI = W.SCENE_DEFAULTS["m_range"]
 R_LO, R_HI = 0.4, 8.0                      # 训练数据覆盖的距离范围
-NAMES = {"newton": "NewtonNet（牛顿骨架）", "pairwise": "PairwiseNet（只有成对+叠加）", "mlp": "黑盒 MLP（无结构）"}
-SHORT = {"newton": "NewtonNet", "pairwise": "PairwiseNet", "mlp": "黑盒 MLP"}
+NAMES = {"physicsnet": "PhysicsNet（牛顿骨架）", "pairwise": "PairwiseNet（只有成对+叠加）", "mlp": "黑盒 MLP（无结构）"}
+SHORT = {"physicsnet": "PhysicsNet", "pairwise": "PairwiseNet", "mlp": "黑盒 MLP"}
 
 # ---- 图表样式 ----
 SURFACE, INK, INK2, MUTED, GRID, AXIS = "#fcfcfb", "#0b0b0b", "#52514e", "#898781", "#e1e0d9", "#c3c2b7"
-COLOR = {"newton": "#2a78d6", "pairwise": "#eb6834", "mlp": "#1baf7a"}
+COLOR = {"physicsnet": "#2a78d6", "pairwise": "#eb6834", "mlp": "#1baf7a"}
 TRUTH = "#b4b2a9"
 
 
@@ -162,7 +162,7 @@ def extrapolation(net, c):
 def fig_laws(res, curves):
     fig, axes = plt.subplots(1, 3, figsize=(14.5, 5.3))
     fig.subplots_adjust(left=0.055, right=0.975, top=0.74, bottom=0.115, wspace=0.27)
-    dot = dict(marker="o", ms=6.5, mfc=COLOR["newton"], mec=SURFACE, mew=1.2, ls="none", zorder=3)
+    dot = dict(marker="o", ms=6.5, mfc=COLOR["physicsnet"], mec=SURFACE, mew=1.2, ls="none", zorder=3)
 
     ax = axes[0]
     g = res["gravity"]
@@ -208,7 +208,7 @@ def fig_laws(res, curves):
            "真实的:  $a = F\\, /\\, m$")
 
     handles = [Line2D([], [], color=TRUTH, lw=3, label="真实定律（网络从未见过公式）"),
-               Line2D([], [], label="NewtonNet 只从运动轨迹中学到的", **dot)]
+               Line2D([], [], label="PhysicsNet 只从运动轨迹中学到的", **dot)]
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.045, 0.995), ncol=2, handlelength=2.2, columnspacing=2.5)
     fig.savefig(f"{OUT}/fig_laws.png")
     plt.close(fig)
@@ -290,7 +290,7 @@ def rollout_stats(models, N, n_sys=60, T=10.0, dt=4e-3, record_every=10, seed=10
 def fig_generalization(gen, roll):
     fig, axes = plt.subplots(2, 2, figsize=(13, 9.8))
     fig.subplots_adjust(left=0.075, right=0.965, top=0.855, bottom=0.065, wspace=0.24, hspace=0.36)
-    order = ["newton", "pairwise", "mlp"]
+    order = ["physicsnet", "pairwise", "mlp"]
 
     def end_label(ax, name, x, y, above):
         ax.annotate(SHORT[name], (x, y), xytext=(0, 7 if above else -11), textcoords="offset points",
@@ -429,14 +429,14 @@ def fig_rollouts(show):
         for i in range(tr.shape[1]):
             ax.plot(tr[:, i, 0], tr[:, i, 1], color=TRUTH, lw=3.6, solid_capstyle="round")
         for i in range(tr.shape[1]):
-            ax.plot(mo[:, i, 0], mo[:, i, 1], color=COLOR["newton"], lw=1.1)
+            ax.plot(mo[:, i, 0], mo[:, i, 1], color=COLOR["physicsnet"], lw=1.1)
         iu = np.triu_indices(tr.shape[1], 1)
         for i, j in zip(*iu):                                   # 终点时刻的弹簧
             if s["K"][i, j] > 0:
                 ax.plot(mo[-1, [i, j], 0], mo[-1, [i, j], 1], color=INK2, lw=1.0, zorder=4)
         size = 30 + 55 * np.sqrt(s["m"])
         ax.scatter(tr[-1, :, 0], tr[-1, :, 1], s=size * 1.9, facecolor="none", edgecolor=INK2, lw=1.3, zorder=5)
-        ax.scatter(mo[-1, :, 0], mo[-1, :, 1], s=size * 0.75, color=COLOR["newton"], edgecolor=SURFACE, lw=1.2, zorder=6)
+        ax.scatter(mo[-1, :, 0], mo[-1, :, 1], s=size * 0.75, color=COLOR["physicsnet"], edgecolor=SURFACE, lw=1.2, zorder=6)
         ax.set_aspect("equal", adjustable="datalim"); ax.grid(False)
         ax.set_xticks([]); ax.set_yticks([])
         for sp in ax.spines.values():
@@ -444,9 +444,9 @@ def fig_rollouts(show):
         ax.margins(0.06)
         titled(ax, titles[key][0], titles[key][1], f"终点位置偏差 = 系统尺度的 {100*s['final_pos_err']:.1f}%")
     handles = [Line2D([], [], color=TRUTH, lw=3.6, label="真实轨迹"),
-               Line2D([], [], color=COLOR["newton"], lw=1.3, label="NewtonNet 自己推演的轨迹"),
+               Line2D([], [], color=COLOR["physicsnet"], lw=1.3, label="PhysicsNet 自己推演的轨迹"),
                Line2D([], [], marker="o", ms=10, mfc="none", mec=INK2, mew=1.3, ls="none", label="真实终点位置"),
-               Line2D([], [], marker="o", ms=7, mfc=COLOR["newton"], mec=SURFACE, ls="none", label="NewtonNet 终点位置")]
+               Line2D([], [], marker="o", ms=7, mfc=COLOR["physicsnet"], mec=SURFACE, ls="none", label="PhysicsNet 终点位置")]
     fig.legend(handles=handles, loc="upper left", bbox_to_anchor=(0.03, 0.99), ncol=4, columnspacing=2.5)
     fig.savefig(f"{OUT}/fig_rollouts.png")
     plt.close(fig)
@@ -466,8 +466,8 @@ def jsonable(o):
 def main():
     os.makedirs(OUT, exist_ok=True)
     setup_style()
-    models = {n: load_model(n) for n in ("newton", "pairwise", "mlp") if os.path.exists(f"checkpoints/{n}.pt")}
-    net = models["newton"]
+    models = {n: load_model(n) for n in ("physicsnet", "pairwise", "mlp") if os.path.exists(f"checkpoints/{n}.pt")}
+    net = models["physicsnet"]
 
     laws, curves = learned_laws(net)
     fig_laws(laws, curves)
@@ -480,8 +480,8 @@ def main():
     print(f"  惯性:  a = F · {i['prefactor']:.4f} · m^{i['exponent']:.4f}   (最大偏差 {i['max_dev']:.2%})")
 
     seeds = {}
-    for path in sorted(glob.glob("checkpoints/newton_seed*.pt")):           # 换随机种子重新训练的结果（如果有）
-        sl, _ = learned_laws(load_model("newton", path))
+    for path in sorted(glob.glob("checkpoints/physicsnet_seed*.pt")):           # 换随机种子重新训练的结果（如果有）
+        sl, _ = learned_laws(load_model("physicsnet", path))
         seeds[os.path.basename(path)] = sl
         print(f"  [{os.path.basename(path)}] 引力 r^{sl['gravity']['exp_r']:.4f}, m^{sl['gravity']['exp_mi']:.4f}, G={sl['gravity']['G']:.4f}; "
               f"弹簧 {sl['spring']['coef_k_r']:.4f}/{sl['spring']['coef_k_L']:.4f}; 惯性 m^{sl['inertia']['exponent']:.4f}")
@@ -496,7 +496,7 @@ def main():
     gen = generalization(models)
     print("== 物体数泛化：加速度相对误差中位数 ==")
     for name in models:
-        print(f"  {name:9s}", "  ".join(f"N={N}: {gen[name][N]['median_rel_err']:.2%}" for N in sorted(gen[name])))
+        print(f"  {name:10s}", "  ".join(f"N={N}: {gen[name][N]['median_rel_err']:.2%}" for N in sorted(gen[name])))
 
     # 随机系统里引力很强，绝大多数很快就会出现近距离交会（超出训练见过的距离范围），
     # 所以只能测"真实轨迹全程留在训练范围内"的那一小部分系统：3 体测 10 个时间单位，4 体测 5 个。
@@ -508,13 +508,13 @@ def main():
         print(f"  （参照：真实物理用同一积分器推演，能量变化 {r['truth_energy_err'][-1]:.1e}）")
         for name in models:
             mm = r["models"][name]
-            print(f"  {name:9s} 终点轨迹偏差 {mm['position'][-1]:.2%}  能量变化 {mm['energy'][-1]:.2e}  "
+            print(f"  {name:10s} 终点轨迹偏差 {mm['position'][-1]:.2%}  能量变化 {mm['energy'][-1]:.2e}  "
                   f"动量变化 {mm['momentum'][-1]:.2e}  角动量变化 {mm['angular_momentum'][-1]:.2e}  相撞比例 {mm['crashed_frac']:.0%}")
     fig_generalization(gen, rolls[3])
 
     show = showcase(net)
     fig_rollouts(show)
-    print("== 推演示例 (NewtonNet) ==")
+    print("== 推演示例 (PhysicsNet) ==")
     for key, sc in show.items():
         note = f"  椭圆长轴进动 {sc['precession_deg_per_orbit']:+.3f}°/圈" if key == "kepler" else ""
         print(f"  {key:9s} 距离范围 {sc['r_range'][0]:.2f}–{sc['r_range'][1]:.2f}  终点偏差 {sc['final_pos_err']:.2%}  "
